@@ -47,11 +47,19 @@ extension NSDate : Value {
     }
 
     public class func fromDatatypeValue(_ stringValue: String) -> NSDate {
-		return dateFormatter.date(from: stringValue)!
+        #if os(Linux)
+            return dateFormatter.dateFromString(stringValue)!
+        #else
+            return dateFormatter.date(from: stringValue)!
+        #endif
     }
 
     public var datatypeValue: String {
-		return dateFormatter.string(from: self)
+        #if os(Linux)
+            return dateFormatter.stringFromDate(self)
+        #else
+    		return dateFormatter.string(from: self)
+        #endif
     }
 
 }

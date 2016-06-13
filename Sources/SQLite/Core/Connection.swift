@@ -317,12 +317,21 @@ public final class Connection {
     ///     The block must throw to roll the savepoint back.
     ///
     /// - Throws: `SQLite.Result.Error`, and rethrows.
+    #if os(Linux)
+    public func savepoint(_ name: String = NSUUID().UUIDString, block: () throws -> Void) throws {
+        let name = name.quote("'")
+        let savepoint = "SAVEPOINT \(name)"
+
+        try transaction(savepoint, block, "RELEASE \(savepoint)", or: "ROLLBACK TO \(savepoint)")
+    }
+    #else
     public func savepoint(_ name: String = NSUUID().uuidString, block: () throws -> Void) throws {
         let name = name.quote("'")
         let savepoint = "SAVEPOINT \(name)"
 
         try transaction(savepoint, block, "RELEASE \(savepoint)", or: "ROLLBACK TO \(savepoint)")
     }
+    #endif
 
     private func transaction(_ begin: String, _ block: () throws -> Void, _ commit: String, or rollback: String) throws {
         return try sync {
