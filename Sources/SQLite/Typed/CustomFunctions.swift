@@ -51,22 +51,22 @@ public extension Connection {
 
     // MARK: -
 
-    public func createFunction<Z : Value, A : Value>(_ function: String, deterministic: Bool = false, _ block: A -> Z) throws -> (Expression<A> -> Expression<Z>) {
+    public func createFunction<Z : Value, A : Value>(_ function: String, deterministic: Bool = false, _ block: (A) -> Z) throws -> ((Expression<A>) -> Expression<Z>) {
         let fn = try createFunction(function, 1, deterministic) { args in block(value(args[0])) }
         return { arg in fn([arg]) }
     }
 
-    public func createFunction<Z : Value, A : Value>(function: String, deterministic: Bool = false, _ block: A? -> Z) throws -> (Expression<A?> -> Expression<Z>) {
+    public func createFunction<Z : Value, A : Value>(function: String, deterministic: Bool = false, _ block: (A?) -> Z) throws -> ((Expression<A?>) -> Expression<Z>) {
         let fn = try createFunction(function, 1, deterministic) { args in block(args[0].map(value)) }
         return { arg in fn([arg]) }
     }
 
-    public func createFunction<Z : Value, A : Value>(function: String, deterministic: Bool = false, _ block: A -> Z?) throws -> (Expression<A> -> Expression<Z?>) {
+    public func createFunction<Z : Value, A : Value>(function: String, deterministic: Bool = false, _ block: (A) -> Z?) throws -> ((Expression<A>) -> Expression<Z?>) {
         let fn = try createFunction(function, 1, deterministic) { args in block(value(args[0])) }
         return { arg in fn([arg]) }
     }
 
-    public func createFunction<Z : Value, A : Value>(function: String, deterministic: Bool = false, _ block: A? -> Z?) throws -> (Expression<A?> -> Expression<Z?>) {
+    public func createFunction<Z : Value, A : Value>(function: String, deterministic: Bool = false, _ block: (A?) -> Z?) throws -> ((Expression<A?>) -> Expression<Z?>) {
         let fn = try createFunction(function, 1, deterministic) { args in block(args[0].map(value)) }
         return { arg in fn([arg]) }
     }
@@ -115,7 +115,7 @@ public extension Connection {
 
     // MARK: -
 
-    private func createFunction<Z : Value>(_ function: String, _ argumentCount: UInt, _ deterministic: Bool, _ block: [Binding?] -> Z) throws -> ([Expressible] -> Expression<Z>) {
+    private func createFunction<Z : Value>(_ function: String, _ argumentCount: UInt, _ deterministic: Bool, _ block: ([Binding?]) -> Z) throws -> (([Expressible]) -> Expression<Z>) {
         createFunction(function, argumentCount: argumentCount, deterministic: deterministic) { arguments in
             block(arguments).datatypeValue
         }
@@ -124,7 +124,7 @@ public extension Connection {
         }
     }
 
-    private func createFunction<Z : Value>(_ function: String, _ argumentCount: UInt, _ deterministic: Bool, _ block: [Binding?] -> Z?) throws -> ([Expressible] -> Expression<Z?>) {
+    private func createFunction<Z : Value>(_ function: String, _ argumentCount: UInt, _ deterministic: Bool, _ block: ([Binding?]) -> Z?) throws -> (([Expressible]) -> Expression<Z?>) {
         createFunction(function, argumentCount: argumentCount, deterministic: deterministic) { arguments in
             block(arguments)?.datatypeValue
         }

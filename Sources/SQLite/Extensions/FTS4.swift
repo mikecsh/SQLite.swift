@@ -142,7 +142,7 @@ extension Tokenizer : CustomStringConvertible {
 
 extension Connection {
 
-    public func registerTokenizer(_ submoduleName: String, next: String -> (String, Range<String.Index>)?) throws {
+    public func registerTokenizer(_ submoduleName: String, next: (String) -> (String, Range<String.Index>)?) throws {
 		fatalError("Not implemented") // FIXME
 //        try check(_SQLiteRegisterTokenizer(handle, Tokenizer.moduleName, submoduleName) { input, offset, length in
 //            let string = String.fromCString(input)!

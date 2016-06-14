@@ -36,7 +36,7 @@ extension Table {
 
     // MARK: - CREATE TABLE
 
-    public func create(temporary: Bool = false, ifNotExists: Bool = false, @noescape block: TableBuilder -> Void) -> String {
+    public func create(temporary: Bool = false, ifNotExists: Bool = false, block: @noescape (TableBuilder) -> Void) -> String {
         let builder = TableBuilder()
 
         block(builder)

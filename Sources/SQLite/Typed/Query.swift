@@ -891,7 +891,7 @@ extension Connection {
                 let column = names.removeLast()
 				let namespace = names.joined(separator: ".")
 
-                func expandGlob(_ namespace: Bool) -> (QueryType throws -> Void) {
+                func expandGlob(_ namespace: Bool) -> ((QueryType) throws -> Void) {
                     return { (query: QueryType) throws -> (Void) in
                         var q = query.dynamicType.init(query.clauses.from.name, database: query.clauses.from.database)
                         q.clauses.select = query.clauses.select

@@ -357,7 +357,7 @@ extension ExpressionType where UnderlyingType == String {
     }
 
     public subscript(range: Range<Int>) -> Expression<UnderlyingType> {
-        return substring(range.startIndex, length: range.endIndex - range.startIndex)
+        return substring(range.lowerBound, length: range.upperBound - range.lowerBound)
     }
 
 }
@@ -581,12 +581,12 @@ extension ExpressionType where UnderlyingType == String? {
     ///
     /// - Returns: A copy of the expression wrapped with the `substr` function.
     public subscript(range: Range<Int>) -> Expression<UnderlyingType> {
-        return substring(range.startIndex, length: range.endIndex - range.startIndex)
+        return substring(range.lowerBound, length: range.upperBound - range.lowerBound)
     }
 
 }
 
-extension Collection where Iterator.Element : Value, Index.Distance == Int {
+extension Collection where Iterator.Element : Value, IndexDistance == Int {
 
     /// Builds a copy of the expression prepended with an `IN` check against the
     /// collection.

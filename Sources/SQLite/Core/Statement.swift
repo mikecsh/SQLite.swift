@@ -174,6 +174,7 @@ public final class Statement {
         return bind(bindings).scalar()
     }
 
+    @discardableResult
     public func step() throws -> Bool {
         return try connection.sync { try self.connection.check(sqlite3_step(self.handle)) == SQLITE_ROW }
     }
@@ -236,7 +237,7 @@ public struct Cursor {
     public subscript(idx: Int) -> Blob {
         let bytes = sqlite3_column_blob(handle, Int32(idx))
         let length = Int(sqlite3_column_bytes(handle, Int32(idx)))
-        return Blob(bytes: bytes, length: length)
+        return Blob(bytes: bytes!, length: length)
     }
 
     // MARK: -

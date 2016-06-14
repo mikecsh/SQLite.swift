@@ -186,6 +186,7 @@ public final class Connection {
     /// - Throws: `Result.Error` if query execution fails.
     ///
     /// - Returns: The statement.
+    @discardableResult
     public func run(_ statement: String, _ bindings: Binding?...) throws -> Statement {
         return try run(statement, bindings)
     }
@@ -201,6 +202,7 @@ public final class Connection {
     /// - Throws: `Result.Error` if query execution fails.
     ///
     /// - Returns: The statement.
+    @discardableResult
     public func run(_ statement: String, _ bindings: [Binding?]) throws -> Statement {
         return try prepare(statement).run(bindings)
     }
@@ -380,7 +382,7 @@ public final class Connection {
         }, unsafeBitCast(box, to: UnsafeMutablePointer<Void>.self))
         busyHandler = box
     }
-    private typealias BusyHandler = @convention(block) Int32 -> Int32
+    private typealias BusyHandler = @convention(block) (Int32) -> Int32
     private var busyHandler: BusyHandler?
 
     /// Sets a handler to call when a statement is executed with the compiled
@@ -390,7 +392,7 @@ public final class Connection {
     ///   with the compiled SQL as its argument.
     ///
     ///       db.trace { SQL in print(SQL) }
-    public func trace(_ callback: (String -> Void)?) {
+    public func trace(_ callback: ((String) -> Void)?) {
         guard let callback = callback else {
             sqlite3_trace(handle, nil, nil)
             trace = nil
@@ -399,11 +401,11 @@ public final class Connection {
 
 		let box: Trace = { callback(String(cString: $0)) }
         sqlite3_trace(handle, { callback, SQL in
-            unsafeBitCast(callback, to: Trace.self)(SQL)
+            unsafeBitCast(callback, to: Trace.self)(SQL!)
         }, unsafeBitCast(box, to: UnsafeMutablePointer<Void>.self))
         trace = box
     }
-    private typealias Trace = @convention(block) UnsafePointer<Int8> -> Void
+    private typealias Trace = @convention(block) (UnsafePointer<Int8>) -> Void
     private var trace: Trace?
 
     /// Registers a callback to be invoked whenever a row is inserted, updated,
@@ -428,7 +430,7 @@ public final class Connection {
             )
         }
         sqlite3_update_hook(handle, { callback, operation, db, table, rowid in
-            unsafeBitCast(callback, to: UpdateHook.self)(operation, db, table, rowid)
+            unsafeBitCast(callback, to: UpdateHook.self)(operation, db!, table!, rowid)
         }, unsafeBitCast(box, to: UnsafeMutablePointer<Void>.self))
         updateHook = box
     }
@@ -542,12 +544,12 @@ public final class Connection {
             flags |= SQLITE_DETERMINISTIC
         }
         sqlite3_create_function_v2(handle, function, Int32(argc), flags, unsafeBitCast(box, to: UnsafeMutablePointer<Void>.self), { context, argc, value in
-            unsafeBitCast(sqlite3_user_data(context), to: Function.self)(context, argc, value)
+            unsafeBitCast(sqlite3_user_data(context), to: Function.self)(context, argc, value!)
         }, nil, nil, nil)
         if functions[function] == nil { self.functions[function] = [:] }
         functions[function]?[argc] = box
     }
-    private typealias Function = @convention(block) (OpaquePointer!, Int32, UnsafeMutablePointer<OpaquePointer?>) -> Void
+    private typealias Function = @convention(block) (OpaquePointer?, Int32, UnsafeMutablePointer<OpaquePointer?>) -> Void
     private var functions = [String: [Int: Function]]()
 
     /// The return type of a collation comparison function.
@@ -566,7 +568,7 @@ public final class Connection {
 			Int32(block(lhs: String(cString: UnsafePointer<Int8>(lhs)), rhs: String(cString: UnsafePointer<Int8>(rhs))).rawValue)
         }
         try! check(sqlite3_create_collation_v2(handle, collation, SQLITE_UTF8, unsafeBitCast(box, to: UnsafeMutablePointer<Void>.self), { callback, _, lhs, _, rhs in
-            unsafeBitCast(callback, to: Collation.self)(lhs, rhs)
+            unsafeBitCast(callback, to: Collation.self)(lhs!, rhs!)
         }, nil))
         collations[collation] = box
     }
@@ -575,6 +577,7 @@ public final class Connection {
 
     // MARK: - Error Handling
 
+    @discardableResult
     func sync<T>(_ block: () throws -> T) rethrows -> T {
         var success: T?
         var failure: ErrorProtocol?
@@ -600,6 +603,7 @@ public final class Connection {
         return success!
     }
 
+    @discardableResult
     func check(_ resultCode: Int32, statement: Statement? = nil) throws -> Int32 {
         guard let error = Result(errorCode: resultCode, connection: self, statement: statement) else {
             return resultCode
@@ -608,7 +612,7 @@ public final class Connection {
         throw error
     }
 
-    private var queue = dispatch_queue_create("SQLite.Database", DISPATCH_QUEUE_SERIAL)
+    private var queue = dispatch_queue_create("SQLite.Database", DISPATCH_QUEUE_SERIAL)!
 
     private static let queueKey = unsafeBitCast(Connection.self, to: UnsafePointer<Void>.self)
 
