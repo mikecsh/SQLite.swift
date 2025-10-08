@@ -3,7 +3,7 @@ import PackageDescription
 
 let deps: [Package.Dependency] = [
     .github("swiftlang/swift-toolchain-sqlite", exact: "1.0.4"),
-    .github("sqlcipher/SQLCipher.swift.git", exact: "4.11.0")
+    .github("sqlcipher/SQLCipher.swift.git", branch: "master")
 ]
 
 let applePlatforms: [PackageDescription.Platform] = [.iOS, .macOS, .watchOS, .tvOS, .visionOS]
